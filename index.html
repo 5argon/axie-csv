@@ -1,0 +1,167 @@
+<html>
+  <head>
+    <title>axie-csv : Example ?id=___&get=image,class,stats.speed</title>
+    <script>
+      var spr = new URLSearchParams(document.location.search);
+      var urlId = spr.get("id");
+      var urlGet = spr.get("get");
+      fetch("https://graphql-gateway.axieinfinity.com/graphql", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          query: `
+query GetAxieDetail($axieId: ID!) {
+  axie(axieId: $axieId) {
+    ...AxieDetail
+    __typename
+  }
+}
+
+fragment AxieDetail on Axie {
+  id
+  image
+  class
+  chain
+  name
+  genes
+  owner
+  birthDate
+  bodyShape
+  class
+  sireId
+  sireClass
+  matronId
+  matronClass
+  stage
+  title
+  breedCount
+  level
+  figure {
+    atlas
+    model
+    image
+    __typename
+  }
+  parts {
+    ...AxiePart
+    __typename
+  }
+  stats {
+    ...AxieStats
+    __typename
+  }
+  auction {
+    ...AxieAuction
+    __typename
+  }
+  ownerProfile {
+    name
+    __typename
+  }
+  battleInfo {
+    ...AxieBattleInfo
+    __typename
+  }
+  children {
+    id
+    name
+    class
+    image
+    title
+    stage
+    __typename
+  }
+  __typename
+}
+
+fragment AxieBattleInfo on AxieBattleInfo {
+  banned
+  banUntil
+  level
+  __typename
+}
+
+fragment AxiePart on AxiePart {
+  id
+  name
+  class
+  type
+  specialGenes
+  stage
+  abilities {
+    ...AxieCardAbility
+    __typename
+  }
+  __typename
+}
+
+fragment AxieCardAbility on AxieCardAbility {
+  id
+  name
+  attack
+  defense
+  energy
+  description
+  backgroundUrl
+  effectIconUrl
+  __typename
+}
+
+fragment AxieStats on AxieStats {
+  hp
+  speed
+  skill
+  morale
+  __typename
+}
+
+fragment AxieAuction on Auction {
+  startingPrice
+  endingPrice
+  startingTimestamp
+  endingTimestamp
+  duration
+  timeLeft
+  currentPrice
+  currentPriceUSD
+  suggestedPrice
+  seller
+  listingIndex
+  state
+  __typename
+}
+         `,
+          variables: {
+            axieId: urlId,
+          },
+        }),
+      })
+        .then((response) => response.json())
+        .then((json) => {
+          var axie = json.data.axie;
+          if (axie !== undefined) {
+            console.log(axie);
+            var result = document.getElementById("result");
+            var splitGet = urlGet.split(",");
+            var joinArray = [];
+            for (var v of splitGet) {
+              var splitDot = v.split(".");
+              var cur = axie;
+              for (var d of splitDot) {
+                cur = cur[d.trim()];
+              }
+              console.log(cur);
+              joinArray.push(cur);
+            }
+            var join = joinArray.join(",");
+            result.innerText = join;
+          }
+        });
+    </script>
+  </head>
+  <body>
+    <div id="result"></div>
+  </body>
+</html>
